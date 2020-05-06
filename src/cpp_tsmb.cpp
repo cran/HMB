@@ -13,58 +13,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-// Estimators from MacKinnon and H. White (1985)
-arma::mat HsMacKinnonInner(
-  const arma::mat& MK_resids_1,
-  const arma::mat& MK_resids_2,
-  const arma::mat& MK_gamma_1,
-  const arma::mat& MK_gamma_2,
-  const arma::mat& G_mat,
-  const double& N_doub
-) {
-  mat result = (N_doub - 1) / N_doub
-    * G_mat * diagmat(MK_resids_1 % MK_resids_2) * G_mat.t()
-    - (N_doub - 1) / (N_doub * N_doub)
-    * MK_gamma_1 * MK_gamma_2.t();
-
-  return result;
-}
-
-arma::mat HsMacKinnon(
-  const arma::mat& MK_resids_1,
-  const arma::mat& G_mat,
-  const int& N_int,
-  const bool& useSame = TRUE,
-  const arma::mat& MK_resids_2 = arma::zeros(1,1)
-) {
-  const double N_doub = (double)N_int;
-
-  const mat MK_gamma_1 = G_mat * MK_resids_1;
-
-  if (useSame == TRUE) {
-    return HsMacKinnonInner(
-      MK_resids_1,
-      MK_resids_1,
-      MK_gamma_1,
-      MK_gamma_1,
-      G_mat,
-      N_doub
-    );
-  }
-
-  const mat MK_gamma_2 = G_mat * MK_resids_2;
-
-  return HsMacKinnonInner(
-    MK_resids_1,
-    MK_resids_2,
-    MK_gamma_1,
-    MK_gamma_2,
-    G_mat,
-    N_doub
-  );
-}
-
-
 // [[Rcpp::export()]]
 Rcpp::List cpp_tsmb(
   const arma::vec& Y_S,
@@ -104,39 +52,41 @@ Rcpp::List cpp_tsmb(
       phi_const_mat.at(k - 1, k - 1) =
         as_scalar(resids_Sa.col(k).t() * resids_Sa.col(k))
         / dims.df_Sa_Z;
-      g_sum += (Beta.at(k) * Beta.at(k) - BetaCov.at(k, k))
-        * phi_const_mat.at(k - 1, k - 1);
+     g_sum += (Beta.at(k) * Beta.at(k)) * phi_const_mat.at(k - 1, k - 1);
 
       for (int l = 1; l < k; ++l) {
         phi_const_mat.at(k - 1, l - 1) =
           as_scalar(resids_Sa.col(k).t() * resids_Sa.col(l))
           / dims.df_Sa_Z;
-        g_sum += 2 * (Beta.at(k) * Beta.at(l) - BetaCov.at(k, l))
-          * phi_const_mat.at(k - 1, l - 1);
+       g_sum += 2 * (Beta.at(k) * Beta.at(l)) * phi_const_mat.at(k - 1, l - 1);
       }
     }
 
-    G_func_sum = Alpha_inv_mat * g_sum;
+   G_func_sum = Alpha_inv_mat * g_sum;
   
 
   mat AlphaCov = Gamma * BetaCov * Gamma.t() + G_func_sum;
 
   // Getting mu estimation and mu variance estimation
-  long double muVar[2]; MuVar(
-    muVar,
-    Z_U,
-    Gamma * Beta,
-    AlphaCov
-  );
+  //long double muVar[2]; MuVar(
+  //  muVar,
+  //  Z_U,
+  //  Gamma * Beta,
+  //  AlphaCov);
+  arma::vec one = ones(Z_U.n_rows, 1);
+  arma::vec jota = one/Z_U.n_rows;
+  const double muVar = as_scalar((jota.t()*Z_U*AlphaCov*Z_U.t()*jota));
+  const double mu = as_scalar((jota.t()*Z_U*Gamma*Beta));
 
   List ret;
   ret["Beta"] = Beta;
   ret["Gamma"] = Gamma;
   ret["BetaCov"] = BetaCov;
   ret["AlphaCov"] = AlphaCov;
-  ret["phis"] = phi_const_mat;
-  ret["omega"] = omega;
-  ret["mu"] = *muVar;
-  ret["muVar"] = *(muVar + 1);
+  ret["phis2"] = phi_const_mat;
+  ret["sigma2"] = g_sum;
+  ret["omega2"] = omega;
+  ret["mu"] = mu;
+  ret["muVar"] = muVar;
   return ret;
 }

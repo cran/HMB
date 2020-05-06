@@ -82,7 +82,8 @@ tsmb = function(
 
   h@resids = list()
     h@resids$omega2 = model$omega
-    h@resids$phi2s = model$phis
+    h@resids$phi2s = model$phis2
+    h@resids$sigma2 = model$sigma2
 
   h@Alpha = model$Gamma %*% model$Beta
   h@AlphaCov = model$AlphaCov

@@ -42,22 +42,26 @@ Rcpp::List cpp_hmb(
   const double omega2 = as_scalar(res_S.t() * res_S) / dims.df_S_X;
   const mat BetaCov = Beta_inv_mat * omega2;
  
-  const mat H_mat = Z_Sa * G_mat_Z_Sa;
-  const double Q = trace(X_Sa * BetaCov * X_Sa.t() * (eye(dims.N_Sa, dims.N_Sa) - H_mat));
-  const double sigma2 = (as_scalar(res_Sa.t() * res_Sa) - Q)/dims.df_Sa_Z;
+  //const mat H_mat = Z_Sa * G_mat_Z_Sa;
+  //const double Q = trace(X_Sa * BetaCov * X_Sa.t() * (eye(dims.N_Sa, dims.N_Sa) - H_mat));
+  const double sigma2 = (as_scalar(res_Sa.t() * res_Sa) )/dims.df_Sa_Z;
   const mat AlphaCov = Alpha_inv_mat * sigma2 + G_mat_Z_Sa * X_Sa * Beta_inv_mat * X_Sa.t() * G_mat_Z_Sa.t() * omega2;
   
   // Getting mu estimation and mu variance estimation
-  long double muVar[2]; MuVar(muVar, Z_U, Alpha, AlphaCov);
+  //long double muVar[2]; MuVar(muVar, Z_U, Alpha, AlphaCov);
+  arma::vec one = ones(Z_U.n_rows, 1);
+  arma::vec jota = one/Z_U.n_rows;
+  const double muVar = as_scalar((jota.t()*Z_U*AlphaCov*Z_U.t()*jota));
+  const double mu = as_scalar((jota.t()*Z_U*Alpha));
 
   List ret;
   ret["Beta"] = Beta;
   ret["Alpha"] = Alpha;
   ret["BetaCov"] = BetaCov;
   ret["AlphaCov"] = AlphaCov;
-  ret["omega"] = sqrt(omega2);
-  ret["sigma"] = sqrt(sigma2);
-  ret["mu"] = *muVar;
-  ret["muVar"] = *(muVar + 1);
+  ret["omega2"] = omega2;
+  ret["sigma2"] = sigma2;
+  ret["mu"] = mu;
+  ret["muVar"] = muVar;
   return ret;
 }

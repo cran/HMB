@@ -103,38 +103,38 @@ Rcpp::List cpp_gtsmb_inner(
 
       // Doubled due to symmetry of involved elements.
       GammaCov_ish += phi_const_pk
-        * 2 * (Beta.at(p) * Beta.at(k) - BetaCov.at(p, k))
+        * 2 * (Beta.at(p) * Beta.at(k))
         * G_Z_left
         * Phi_Sa_inv.slice(p - 1)
         * interPhi
         * Phi_Sa_inv.slice(k - 1)
         * G_Z_right;
         /*GammaCov_ish += phi_const_pk
-          * 2 * (Beta.at(p) * Beta.at(k) - BetaCov.at(p, k))
-          * G_Z_left
-          * Str_SqMult(Str_SqMult(Phi_Sa_inv.slice(p - 1), interPhi), Phi_Sa_inv.slice(k - 1))
-          * G_Z_right;*/
+        * 2 * (Beta.at(p) * Beta.at(k))
+        * G_Z_left
+        * Str_SqMult(Str_SqMult(Phi_Sa_inv.slice(p - 1), interPhi), Phi_Sa_inv.slice(k - 1))
+        * G_Z_right;*/
     }
   }
 
   // Calculating mu-estimator and variance-estimator of mu-estimator
   // Variance according to Holm et. al (2017): 2 + (1 - 3)
-  long double muVar[2];
-  MuVar(
-    muVar,
-    Z_U,
-    Gamma * Beta,
-    (Gamma * BetaCov * Gamma.t() + GammaCov_ish)
-  );
+  //long double muVar[2];
+  //MuVar(muVar, Z_U, Gamma * Beta, (Gamma * BetaCov * Gamma.t() + GammaCov_ish));
+  
+  arma::vec one = ones(Z_U.n_rows, 1);
+  arma::vec jota = one/Z_U.n_rows;
+  const double muVar = as_scalar((jota.t()*Z_U*(Gamma * BetaCov * Gamma.t() + GammaCov_ish)*Z_U.t()*jota));
+  const double mu = as_scalar((jota.t()*Z_U*Gamma*Beta));
 
   List ret;
   ret["Beta"] = Beta;
   ret["BetaCov"] = BetaCov;
-  ret["omega"] = omega_const;
+  ret["omega2"] = omega_const;
   ret["Gamma"] = Gamma;
-  ret["mu"] = *muVar;
-  ret["muVar"] = *(muVar + 1);
+  ret["mu"] = mu;
+  ret["muVar"] = muVar;
   ret["GammaCov_ish"] = GammaCov_ish;
-  ret["phis"] = phi_const_mat;
+  ret["phi2s"] = phi_const_mat;
   return ret;
 }

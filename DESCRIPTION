@@ -1,8 +1,8 @@
 Package: HMB
 Type: Package
 Title: Hierarchical Model-Based Estimation Approach
-Version: 1.0
-Date: 2018-11-20
+Version: 1.1
+Date: 2020-05-06
 Authors@R: c(
               person("Svetlana", "Saarela", role = c("cre", "aut"), email = "admin@svetlanasaarela.com"),
               person("Sören", "Holm", role = "aut"),
@@ -20,11 +20,11 @@ Collate: RcppExports.R helper_functions.R HMB-class.R
         SummaryHMB-class.R ghmb.R gtsmb.R hmb.R tsmb.R
 RoxygenNote: 6.1.0
 NeedsCompilation: yes
-Packaged: 2018-11-19 19:12:33 UTC; svla0001
+Packaged: 2020-05-06 06:36:16 UTC; svla0001
 Author: Svetlana Saarela [cre, aut],
   Sören Holm [aut],
   Zhiqiang Yang [aut],
   Wilmer Prentius [ctb]
 Maintainer: Svetlana Saarela <admin@svetlanasaarela.com>
 Repository: CRAN
-Date/Publication: 2018-11-30 12:50:06 UTC
+Date/Publication: 2020-05-06 07:10:02 UTC

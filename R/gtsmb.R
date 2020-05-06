@@ -139,9 +139,11 @@ gtsmb = function(
   h@BetaCov = model$BetaCov
   h@mu = model$mu
   h@muVar = model$muVar
-  h@resids = list(
-    phi2s = model$phis
-  )
+  
+  h@resids = list()
+    h@resids$omega2 = model$omega
+    h@resids$phi2s = model$phi2s
+  
 
   return(h)
 }
